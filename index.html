@@ -25,9 +25,9 @@
     -webkit-font-smoothing:antialiased;
   }
   .wrap{
-    max-width:760px;
+    max-width:1400px;
     margin:0 auto;
-    padding:40px 24px 96px;
+    padding:56px 48px 260px;
   }
   .topbar{
     display:flex;
@@ -80,23 +80,25 @@
     position:relative;
     display:flex;
     align-items:center;
-    gap:16px;
-    padding:14px 16px 14px 14px;
+    flex-wrap:wrap;
+    row-gap:12px;
+    gap:18px;
+    padding:18px 20px 18px 18px;
     background:var(--card);
     border:1px solid var(--border);
     border-left-width:4px;
     border-radius:0 12px 12px 0;
   }
   .dot{
-    width:10px;
-    height:10px;
+    width:11px;
+    height:11px;
     border-radius:50%;
     flex-shrink:0;
   }
   .meta{flex:1; min-width:0;}
   .meta p.name{
     font-weight:600;
-    font-size:15px;
+    font-size:16px;
     margin:0;
     white-space:nowrap;
     overflow:hidden;
@@ -110,11 +112,14 @@
   .links{
     display:flex;
     gap:8px;
-    flex-shrink:0;
+    flex-wrap:wrap;
+    flex:1 1 220px;
+    min-width:0;
   }
   .link-btn{
     display:flex;
     align-items:center;
+    justify-content:center;
     gap:6px;
     padding:8px 12px;
     border:1px solid var(--border-strong);
@@ -124,6 +129,7 @@
     font-size:13px;
     background:transparent;
     white-space:nowrap;
+    flex:1 1 100px;
   }
   .link-btn:hover{ background:#242220; }
   .link-btn.primary{
@@ -154,6 +160,35 @@
   }
   .edit-btn:hover{ color:#a9c1f5; background:rgba(126,161,242,0.12); }
   .del-btn:hover{ color:#e2766a; background:rgba(226,118,106,0.12); }
+  .drag-handle{
+    display:flex;
+    align-items:center;
+    color:var(--text-muted);
+    cursor:grab;
+    padding:4px;
+    flex-shrink:0;
+    touch-action:none;
+  }
+  .drag-handle:hover{ color:var(--text-secondary); }
+  .project.dragging{ opacity:0.35; }
+  .project.drag-over{ border-top:2px solid #7ea1f2; }
+  .move-group{
+    display:flex;
+    flex-direction:column;
+    flex-shrink:0;
+  }
+  .move-btn{
+    background:transparent;
+    border:none;
+    color:var(--text-muted);
+    cursor:pointer;
+    padding:2px;
+    border-radius:4px;
+    display:flex;
+  }
+  .move-btn:hover{ color:var(--text-secondary); background:#242220; }
+  .move-btn:disabled{ opacity:0.25; cursor:default; }
+  .move-btn:disabled:hover{ background:none; }
   .new-site-btn{
     display:flex;
     align-items:center;
@@ -185,7 +220,7 @@
   }
 
   /* form / settings pages */
-  #new-site-view, #settings-view{ display:none; }
+  #new-site-view{ display:none; }
   .back-btn{
     display:flex;
     align-items:center;
@@ -267,12 +302,23 @@
   .save-btn:hover{ background:#d8d5cc; }
   .hint{ font-size:12px; color:var(--text-muted); margin-top:-8px; }
 
+  /* ---- wide desktop: use horizontal space instead of one long column ---- */
+  @media (min-width: 900px){
+    .project-list{
+      display:grid;
+      grid-template-columns:repeat(2, 1fr);
+      gap:14px;
+    }
+  }
+  @media (min-width: 1300px){
+    .project-list{
+      grid-template-columns:repeat(3, 1fr);
+    }
+  }
+
   /* ---- tablet ---- */
   @media (max-width: 720px){
     .wrap{ padding:32px 20px 80px; }
-    .project{ flex-wrap:wrap; row-gap:12px; }
-    .links{ width:100%; flex-wrap:wrap; }
-    .link-btn{ flex:1 1 120px; justify-content:center; }
   }
 
   /* ---- mobile ---- */
@@ -281,13 +327,15 @@
     .project{
       flex-direction:column;
       align-items:flex-start;
-      padding-right:56px;
+      padding-right:96px;
     }
     .meta{ width:100%; }
+    .drag-handle{ display:none; }
     .row-actions{
       position:absolute;
       top:12px;
       right:12px;
+      gap:4px;
     }
     .links{ flex-direction:column; }
     .link-btn{ width:100%; }
@@ -299,13 +347,6 @@
 </head>
 <body>
 <div class="wrap">
-
-  <div class="topbar">
-    <button class="icon-btn" id="settings-btn">
-      <svg class="icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .34 1.87l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.7 1.7 0 0 0-1.87-.34 1.7 1.7 0 0 0-1 1.55V21a2 2 0 0 1-4 0v-.09A1.7 1.7 0 0 0 9 19.4a1.7 1.7 0 0 0-1.87.34l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.7 1.7 0 0 0 4.6 15a1.7 1.7 0 0 0-1.55-1H3a2 2 0 0 1 0-4h.09A1.7 1.7 0 0 0 4.6 9a1.7 1.7 0 0 0-.34-1.87l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.7 1.7 0 0 0 9 4.6a1.7 1.7 0 0 0 1-1.55V3a2 2 0 0 1 4 0v.09a1.7 1.7 0 0 0 1 1.55 1.7 1.7 0 0 0 1.87-.34l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.7 1.7 0 0 0 19.4 9a1.7 1.7 0 0 0 1.55 1H21a2 2 0 0 1 0 4h-.09a1.7 1.7 0 0 0-1.51 1z"/></svg>
-      Settings
-    </button>
-  </div>
 
   <div id="sync-banner-slot"></div>
 
@@ -357,27 +398,19 @@
     </div>
   </div>
 
-  <div id="settings-view">
-    <button class="back-btn" id="settings-back-btn">
-      <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
-      Back to dashboard
-    </button>
-    <div class="form-card">
-      <div class="field">
-        <label for="s-key">Dashboard key</label>
-        <input type="password" id="s-key" placeholder="The value you set with: wrangler pages secret put DASHBOARD_KEY">
-        <div class="hint">Needed on each device to add, edit, or delete — just viewing the dashboard works without it.</div>
-      </div>
-      <button class="save-btn" id="settings-save-btn">Save</button>
-    </div>
-  </div>
 
 </div>
 
 <script>
   const LOCAL_KEY = "dashboard_projects_cache_v1";
-  const CONFIG_KEY = "dashboard_key_v1";
   const API_BASE = "/api/projects";
+
+  // Set this to the same value as the DASHBOARD_KEY secret in your Pages
+  // project settings. Anyone who views this page's source can read it, so
+  // only do this if you're fine with the site being effectively unlocked
+  // for anyone who finds the URL (see README.md for the Cloudflare Access
+  // alternative if you want a real login wall instead).
+  const DASHBOARD_KEY = "unkso";
 
   const DEFAULT_PROJECTS = [
     { id: "1", name: "Easy Tarkov", color: "#c64d2e", repo: "", worker: "", site: "", updated: "2 days ago" },
@@ -387,9 +420,6 @@
 
   let editingId = null;
   let usingFallback = false;
-
-  function getKey(){ return localStorage.getItem(CONFIG_KEY) || ""; }
-  function setKey(key){ localStorage.setItem(CONFIG_KEY, key); }
 
   function loadLocalCache(){
     try{
@@ -423,11 +453,11 @@
   async function createProject(project){
     const res = await fetch(API_BASE, {
       method: "POST",
-      headers: { "Content-Type": "application/json", "Authorization": "Bearer " + getKey() },
+      headers: { "Content-Type": "application/json", "Authorization": "Bearer " + DASHBOARD_KEY },
       body: JSON.stringify(project)
     });
     if(!res.ok){
-      alert("Couldn't save. Check your dashboard key in Settings, then try again.");
+      alert("Couldn't save. Check that DASHBOARD_KEY in index.html matches your Pages secret.");
       return false;
     }
     return true;
@@ -436,11 +466,11 @@
   async function updateProject(id, project){
     const res = await fetch(API_BASE + "/" + encodeURIComponent(id), {
       method: "PUT",
-      headers: { "Content-Type": "application/json", "Authorization": "Bearer " + getKey() },
+      headers: { "Content-Type": "application/json", "Authorization": "Bearer " + DASHBOARD_KEY },
       body: JSON.stringify(project)
     });
     if(!res.ok){
-      alert("Couldn't save. Check your dashboard key in Settings, then try again.");
+      alert("Couldn't save. Check that DASHBOARD_KEY in index.html matches your Pages secret.");
       return false;
     }
     return true;
@@ -449,13 +479,26 @@
   async function deleteProject(id){
     const res = await fetch(API_BASE + "/" + encodeURIComponent(id), {
       method: "DELETE",
-      headers: { "Authorization": "Bearer " + getKey() }
+      headers: { "Authorization": "Bearer " + DASHBOARD_KEY }
     });
     if(!res.ok){
-      alert("Couldn't delete. Check your dashboard key in Settings, then try again.");
+      alert("Couldn't delete. Check that DASHBOARD_KEY in index.html matches your Pages secret.");
       return false;
     }
     return true;
+  }
+
+  async function reorderProjects(order){
+    try{
+      const res = await fetch(API_BASE + "/reorder", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "Authorization": "Bearer " + DASHBOARD_KEY },
+        body: JSON.stringify({ order })
+      });
+      return res.ok;
+    }catch(e){
+      return false;
+    }
   }
 
   // ---- icons ----
@@ -473,6 +516,15 @@
   }
   function iconEdit(){
     return '<svg class="icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4 12.5-12.5z"/></svg>';
+  }
+  function iconGrip(){
+    return '<svg class="icon-sm" viewBox="0 0 24 24" fill="currentColor"><circle cx="9" cy="6" r="1.4"/><circle cx="15" cy="6" r="1.4"/><circle cx="9" cy="12" r="1.4"/><circle cx="15" cy="12" r="1.4"/><circle cx="9" cy="18" r="1.4"/><circle cx="15" cy="18" r="1.4"/></svg>';
+  }
+  function iconChevronUp(){
+    return '<svg class="icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 15l-6-6-6 6"/></svg>';
+  }
+  function iconChevronDown(){
+    return '<svg class="icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>';
   }
 
   function linkOrDisabled(url, label, icon, primary){
@@ -496,9 +548,7 @@
     }
     slot.innerHTML = `<div class="sync-banner">
       <span>Couldn't reach the sync API — showing a locally cached copy.</span>
-      <button id="banner-settings-link">Check settings</button>
     </div>`;
-    document.getElementById("banner-settings-link").addEventListener("click", showSettings);
   }
 
   let cachedProjects = [];
@@ -507,15 +557,21 @@
     const projects = await fetchProjects();
     renderSyncBanner();
     cachedProjects = projects;
+    renderList();
+  }
+
+  function renderList(){
     const list = document.getElementById("project-list");
+    const projects = cachedProjects;
 
     if(projects.length === 0){
       list.innerHTML = '<div class="empty">No projects yet. Add your first one below.</div>';
       return;
     }
 
-    list.innerHTML = projects.map(p => `
-      <div class="project" style="border-left-color:${escapeAttr(p.color)}">
+    list.innerHTML = projects.map((p, i) => `
+      <div class="project" draggable="true" data-id="${escapeAttr(p.id)}" style="border-left-color:${escapeAttr(p.color)}">
+        <div class="drag-handle" title="Drag to reorder" aria-hidden="true">${iconGrip()}</div>
         <div class="dot" style="background:${escapeAttr(p.color)}"></div>
         <div class="meta">
           <p class="name">${escapeHtml(p.name)}</p>
@@ -527,6 +583,10 @@
           ${linkOrDisabled(p.site, "Live site", iconWorld(), true)}
         </div>
         <div class="row-actions">
+          <div class="move-group">
+            <button class="move-btn" data-id="${escapeAttr(p.id)}" data-dir="up" title="Move up" aria-label="Move ${escapeHtml(p.name)} up" ${i === 0 ? "disabled" : ""}>${iconChevronUp()}</button>
+            <button class="move-btn" data-id="${escapeAttr(p.id)}" data-dir="down" title="Move down" aria-label="Move ${escapeHtml(p.name)} down" ${i === projects.length - 1 ? "disabled" : ""}>${iconChevronDown()}</button>
+          </div>
           <button class="edit-btn" data-id="${escapeAttr(p.id)}" title="Edit project" aria-label="Edit ${escapeHtml(p.name)}">${iconEdit()}</button>
           <button class="del-btn" data-id="${escapeAttr(p.id)}" title="Delete project" aria-label="Delete ${escapeHtml(p.name)}">${iconTrash()}</button>
         </div>
@@ -545,19 +605,69 @@
         if(project) showNewSite(project);
       });
     });
+    list.querySelectorAll(".move-btn").forEach(btn => {
+      btn.addEventListener("click", () => {
+        const id = btn.getAttribute("data-id");
+        const dir = btn.getAttribute("data-dir");
+        const ids = cachedProjects.map(p => p.id);
+        const idx = ids.indexOf(id);
+        const swapWith = dir === "up" ? idx - 1 : idx + 1;
+        if(swapWith < 0 || swapWith >= ids.length) return;
+        [ids[idx], ids[swapWith]] = [ids[swapWith], ids[idx]];
+        applyOrder(ids);
+      });
+    });
+
+    let dragSrcId = null;
+    list.querySelectorAll(".project").forEach(row => {
+      row.addEventListener("dragstart", () => {
+        dragSrcId = row.getAttribute("data-id");
+        row.classList.add("dragging");
+      });
+      row.addEventListener("dragend", () => {
+        row.classList.remove("dragging");
+        list.querySelectorAll(".project").forEach(r => r.classList.remove("drag-over"));
+      });
+      row.addEventListener("dragover", (e) => {
+        e.preventDefault();
+        row.classList.add("drag-over");
+      });
+      row.addEventListener("dragleave", () => {
+        row.classList.remove("drag-over");
+      });
+      row.addEventListener("drop", (e) => {
+        e.preventDefault();
+        row.classList.remove("drag-over");
+        const targetId = row.getAttribute("data-id");
+        if(!dragSrcId || dragSrcId === targetId) return;
+        const ids = cachedProjects.map(p => p.id);
+        const from = ids.indexOf(dragSrcId);
+        const to = ids.indexOf(targetId);
+        if(from === -1 || to === -1) return;
+        ids.splice(from, 1);
+        ids.splice(to, 0, dragSrcId);
+        applyOrder(ids);
+      });
+    });
+  }
+
+  async function applyOrder(ids){
+    // Reorder instantly in the UI, then persist in the background.
+    cachedProjects = ids.map(id => cachedProjects.find(p => p.id === id)).filter(Boolean);
+    renderList();
+    const ok = await reorderProjects(ids);
+    if(!ok) render();
   }
 
   function showDashboard(){
     document.getElementById("dashboard-view").style.display = "block";
     document.getElementById("new-site-view").style.display = "none";
-    document.getElementById("settings-view").style.display = "none";
     render();
   }
 
   function showNewSite(project){
     editingId = project ? project.id : null;
     document.getElementById("dashboard-view").style.display = "none";
-    document.getElementById("settings-view").style.display = "none";
     document.getElementById("new-site-view").style.display = "block";
 
     document.getElementById("f-name").value = project ? project.name : "";
@@ -573,17 +683,8 @@
     document.getElementById("f-name").focus();
   }
 
-  function showSettings(){
-    document.getElementById("dashboard-view").style.display = "none";
-    document.getElementById("new-site-view").style.display = "none";
-    document.getElementById("settings-view").style.display = "block";
-    document.getElementById("s-key").value = getKey();
-  }
-
   document.getElementById("new-site-btn").addEventListener("click", () => showNewSite(null));
   document.getElementById("back-btn").addEventListener("click", showDashboard);
-  document.getElementById("settings-btn").addEventListener("click", showSettings);
-  document.getElementById("settings-back-btn").addEventListener("click", showDashboard);
 
   document.querySelectorAll(".swatch").forEach(sw => {
     sw.addEventListener("click", () => {
@@ -608,11 +709,6 @@
     };
     const ok = editingId ? await updateProject(editingId, project) : await createProject(project);
     if(ok) showDashboard();
-  });
-
-  document.getElementById("settings-save-btn").addEventListener("click", () => {
-    setKey(document.getElementById("s-key").value.trim());
-    showDashboard();
   });
 
   showDashboard();

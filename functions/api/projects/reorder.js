@@ -1,7 +1,6 @@
 // Cloudflare Pages Function
-// Handles: GET /api/projects (list), POST /api/projects (create)
-// Requires a KV binding named PROJECTS_KV and a secret named DASHBOARD_KEY,
-// both set on the Pages project (see README.md).
+// Handles: POST /api/projects/reorder  body: { order: [id1, id2, ...] }
+// Rewrites stored project order to match the given id sequence.
 
 const CORS_HEADERS = {
   "Access-Control-Allow-Origin": "*",
@@ -25,27 +24,22 @@ export async function onRequestOptions() {
   return new Response(null, { headers: CORS_HEADERS });
 }
 
-export async function onRequestGet(context) {
-  const projects = (await context.env.PROJECTS_KV.get("projects", "json")) || [];
-  return json(projects);
-}
-
 export async function onRequestPost(context) {
   if (!authOk(context)) return json({ error: "unauthorized" }, 401);
+
   const body = await context.request.json();
-  if (!body.name) return json({ error: "name is required" }, 400);
+  const order = body.order;
+  if (!Array.isArray(order)) return json({ error: "order must be an array of ids" }, 400);
 
   const projects = (await context.env.PROJECTS_KV.get("projects", "json")) || [];
-  const project = {
-    id: Date.now().toString(),
-    name: body.name,
-    color: body.color || "#7f77dd",
-    repo: body.repo || "",
-    worker: body.worker || "",
-    site: body.site || "",
-    updated: "just now",
-  };
-  projects.push(project);
-  await context.env.PROJECTS_KV.put("projects", JSON.stringify(projects));
-  return json(project, 201);
+  const byId = new Map(projects.map((p) => [p.id, p]));
+
+  const reordered = order.map((id) => byId.get(id)).filter(Boolean);
+  // Any project not mentioned in the order (shouldn't normally happen) stays,
+  // appended at the end, so nothing is silently dropped.
+  const seen = new Set(reordered.map((p) => p.id));
+  const remaining = projects.filter((p) => !seen.has(p.id));
+
+  await context.env.PROJECTS_KV.put("projects", JSON.stringify([...reordered, ...remaining]));
+  return json({ ok: true });
 }

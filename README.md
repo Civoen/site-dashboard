@@ -12,7 +12,8 @@ project-dashboard/
 │   └── api/
 │       └── projects/
 │           ├── index.js             ← GET (list) / POST (create) /api/projects
-│           └── [id].js              ← PUT (update) / DELETE /api/projects/:id
+│           ├── [id].js              ← PUT (update) / DELETE /api/projects/:id
+│           └── reorder.js           ← POST /api/projects/reorder (drag-and-drop order)
 ├── wrangler.toml                    ← only needed for local dev (wrangler pages dev)
 └── README.md
 ```
@@ -69,11 +70,24 @@ secret**.
 Bindings and secrets only take effect on the next deployment, so trigger one
 more (push a commit, or re-run `wrangler pages deploy .`).
 
-## 6. Connect each device
+## 6. Dashboard key
 
-Open the live site, click **Settings** (top right), and paste in the
-dashboard key from step 4. Viewing the dashboard works on any device
-without it — the key is only needed to add, edit, or delete.
+There's no Settings panel in the UI — the dashboard key is hardcoded
+directly in `index.html` (search for `DASHBOARD_KEY`) so it works
+immediately on every device without any per-browser setup. That value must
+match the `DASHBOARD_KEY` secret from step 4 exactly.
+
+**Trade-off to know about:** because the key lives in the page's own
+source code, anyone who finds your `pages.dev` URL and views page source
+can read it. That's fine if you're the only one who'll ever visit the URL
+and you're comfortable with that. If you want the site itself locked down,
+put it behind **Cloudflare Access** instead (Workers & Pages > your
+project > Settings > your domain > Access policies — free for personal
+use, adds a login prompt in front of the whole site).
+
+If you ever change the key, update it in two places: the `DASHBOARD_KEY`
+secret in Pages settings, and the `DASHBOARD_KEY` constant in
+`index.html` — then redeploy.
 
 ## Notes
 

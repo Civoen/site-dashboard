@@ -9,7 +9,7 @@ pages_build_output_dir = "."
 # KV namespace bindings.
 [[kv_namespaces]]
 binding = "PROJECTS_KV"
-id = "2faf328632dd4fa2960fc7cc0503964a"
+id = "REPLACE_WITH_YOUR_KV_NAMESPACE_ID"
 
 # Set the actual secret value with:
 #   wrangler pages secret put DASHBOARD_KEY --project-name=your-pages-project-name
