@@ -1,0 +1,16 @@
+name = "project-dashboard"
+pages_build_output_dir = "."
+
+# After running:
+#   wrangler kv namespace create PROJECTS_KV
+# paste the returned id below. This is only needed for local dev
+# (wrangler pages dev). For the live site, add the same binding in the
+# Cloudflare dashboard under Pages > your project > Settings > Functions >
+# KV namespace bindings.
+[[kv_namespaces]]
+binding = "PROJECTS_KV"
+id = "REPLACE_WITH_YOUR_KV_NAMESPACE_ID"
+
+# Set the actual secret value with:
+#   wrangler pages secret put DASHBOARD_KEY --project-name=your-pages-project-name
+# Do not put the real key in this file.
