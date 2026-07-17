@@ -1,0 +1,14 @@
+name = "project-dashboard-api"
+main = "worker.js"
+compatibility_date = "2026-07-17"
+
+# After running:
+#   wrangler kv namespace create PROJECTS_KV
+# paste the returned id below.
+kv_namespaces = [
+  { binding = "PROJECTS_KV", id = "REPLACE_WITH_YOUR_KV_NAMESPACE_ID" }
+]
+
+# Set the actual secret value with:
+#   wrangler secret put DASHBOARD_KEY
+# Do not put the real key in this file.

@@ -1,0 +1,608 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Project dashboard</title>
+<style>
+  :root{
+    --bg:#131210;
+    --card:#1c1a17;
+    --border:#2c2a26;
+    --border-strong:#3d3a34;
+    --text:#f0eee8;
+    --text-secondary:#a8a399;
+    --text-muted:#756f63;
+    --radius:8px;
+    --font: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    font-family:var(--font);
+    background:var(--bg);
+    color:var(--text);
+    -webkit-font-smoothing:antialiased;
+  }
+  .wrap{
+    max-width:760px;
+    margin:0 auto;
+    padding:40px 24px 96px;
+  }
+  .topbar{
+    display:flex;
+    justify-content:flex-end;
+    margin-bottom:16px;
+  }
+  .icon-btn{
+    display:flex;
+    align-items:center;
+    gap:6px;
+    background:none;
+    border:1px solid var(--border);
+    color:var(--text-secondary);
+    font-size:12px;
+    font-family:inherit;
+    padding:6px 10px;
+    border-radius:var(--radius);
+    cursor:pointer;
+  }
+  .icon-btn:hover{ border-color:var(--border-strong); color:var(--text); }
+  .sync-banner{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:12px;
+    font-size:12px;
+    color:var(--text-muted);
+    border:1px dashed var(--border-strong);
+    border-radius:var(--radius);
+    padding:10px 14px;
+    margin-bottom:16px;
+  }
+  .sync-banner button{
+    background:none;
+    border:none;
+    color:#7ea1f2;
+    font-size:12px;
+    font-family:inherit;
+    cursor:pointer;
+    padding:0;
+  }
+  .project-list{
+    display:flex;
+    flex-direction:column;
+    gap:10px;
+    margin-bottom:16px;
+  }
+  .project{
+    display:flex;
+    align-items:center;
+    gap:16px;
+    padding:14px 16px 14px 14px;
+    background:var(--card);
+    border:1px solid var(--border);
+    border-left-width:4px;
+    border-radius:0 12px 12px 0;
+  }
+  .dot{
+    width:10px;
+    height:10px;
+    border-radius:50%;
+    flex-shrink:0;
+  }
+  .meta{flex:1; min-width:0;}
+  .meta p.name{
+    font-weight:600;
+    font-size:15px;
+    margin:0;
+    white-space:nowrap;
+    overflow:hidden;
+    text-overflow:ellipsis;
+  }
+  .meta p.date{
+    font-size:12px;
+    color:var(--text-secondary);
+    margin:2px 0 0;
+  }
+  .links{
+    display:flex;
+    gap:8px;
+    flex-shrink:0;
+  }
+  .link-btn{
+    display:flex;
+    align-items:center;
+    gap:6px;
+    padding:8px 12px;
+    border:1px solid var(--border-strong);
+    border-radius:var(--radius);
+    text-decoration:none;
+    color:var(--text);
+    font-size:13px;
+    background:transparent;
+    white-space:nowrap;
+  }
+  .link-btn:hover{ background:#242220; }
+  .link-btn.primary{
+    border-color:transparent;
+    background:rgba(126,161,242,0.15);
+    color:#a9c1f5;
+  }
+  .link-btn.disabled{
+    color:var(--text-muted);
+    border-style:dashed;
+    pointer-events:none;
+  }
+  .icon{ width:15px; height:15px; }
+  .icon-sm{ width:14px; height:14px; }
+  .row-actions{
+    display:flex;
+    gap:2px;
+    flex-shrink:0;
+  }
+  .edit-btn, .del-btn{
+    background:transparent;
+    border:none;
+    color:var(--text-muted);
+    cursor:pointer;
+    padding:6px;
+    border-radius:6px;
+    display:flex;
+  }
+  .edit-btn:hover{ color:#a9c1f5; background:rgba(126,161,242,0.12); }
+  .del-btn:hover{ color:#e2766a; background:rgba(226,118,106,0.12); }
+  .new-site-btn{
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    gap:6px;
+    width:100%;
+    padding:14px;
+    border:1.5px dashed var(--border-strong);
+    border-radius:var(--radius);
+    background:transparent;
+    color:var(--text-secondary);
+    font-size:14px;
+    font-family:inherit;
+    cursor:pointer;
+  }
+  .new-site-btn:hover{
+    border-color:var(--text-muted);
+    color:var(--text);
+    background:#1a1815;
+  }
+  .empty{
+    text-align:center;
+    padding:48px 24px;
+    color:var(--text-muted);
+    font-size:14px;
+    border:1px dashed var(--border-strong);
+    border-radius:12px;
+    margin-bottom:16px;
+  }
+
+  /* form / settings pages */
+  #new-site-view, #settings-view{ display:none; }
+  .back-btn{
+    display:flex;
+    align-items:center;
+    gap:6px;
+    background:none;
+    border:none;
+    color:var(--text-secondary);
+    font-size:13px;
+    font-family:inherit;
+    cursor:pointer;
+    padding:6px 0;
+    margin-bottom:20px;
+  }
+  .back-btn:hover{ color:var(--text); }
+  .form-card{
+    background:var(--card);
+    border:1px solid var(--border);
+    border-radius:12px;
+    padding:24px;
+    display:flex;
+    flex-direction:column;
+    gap:16px;
+  }
+  .field label{
+    display:block;
+    font-size:13px;
+    color:var(--text-secondary);
+    margin-bottom:6px;
+  }
+  .field input[type="text"], .field input[type="url"], .field input[type="password"]{
+    width:100%;
+    padding:10px 12px;
+    border:1px solid var(--border-strong);
+    border-radius:var(--radius);
+    font-size:14px;
+    font-family:inherit;
+    background:#0f0e0c;
+    color:var(--text);
+  }
+  .field input:focus{
+    outline:none;
+    border-color:#7ea1f2;
+    box-shadow:0 0 0 3px rgba(126,161,242,0.15);
+  }
+  .color-row{
+    display:flex;
+    align-items:center;
+    gap:12px;
+  }
+  .color-row input[type="color"]{
+    width:48px;
+    height:36px;
+    padding:2px;
+    border:1px solid var(--border-strong);
+    border-radius:6px;
+    background:none;
+    cursor:pointer;
+  }
+  .swatches{ display:flex; gap:8px; }
+  .swatch{
+    width:22px; height:22px; border-radius:50%;
+    border:2px solid transparent;
+    cursor:pointer;
+  }
+  .swatch.selected{ border-color:var(--text); }
+  .save-btn{
+    background:#f0eee8;
+    color:#131210;
+    border:none;
+    padding:12px;
+    border-radius:var(--radius);
+    font-size:14px;
+    font-family:inherit;
+    font-weight:600;
+    cursor:pointer;
+    margin-top:4px;
+  }
+  .save-btn:hover{ background:#d8d5cc; }
+  .hint{ font-size:12px; color:var(--text-muted); margin-top:-8px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="topbar">
+    <button class="icon-btn" id="settings-btn">
+      <svg class="icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .34 1.87l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.7 1.7 0 0 0-1.87-.34 1.7 1.7 0 0 0-1 1.55V21a2 2 0 0 1-4 0v-.09A1.7 1.7 0 0 0 9 19.4a1.7 1.7 0 0 0-1.87.34l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.7 1.7 0 0 0 4.6 15a1.7 1.7 0 0 0-1.55-1H3a2 2 0 0 1 0-4h.09A1.7 1.7 0 0 0 4.6 9a1.7 1.7 0 0 0-.34-1.87l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.7 1.7 0 0 0 9 4.6a1.7 1.7 0 0 0 1-1.55V3a2 2 0 0 1 4 0v.09a1.7 1.7 0 0 0 1 1.55 1.7 1.7 0 0 0 1.87-.34l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.7 1.7 0 0 0 19.4 9a1.7 1.7 0 0 0 1.55 1H21a2 2 0 0 1 0 4h-.09a1.7 1.7 0 0 0-1.51 1z"/></svg>
+      Settings
+    </button>
+  </div>
+
+  <div id="sync-banner-slot"></div>
+
+  <div id="dashboard-view">
+    <div class="project-list" id="project-list"></div>
+    <button class="new-site-btn" id="new-site-btn">
+      <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg>
+      New site
+    </button>
+  </div>
+
+  <div id="new-site-view">
+    <button class="back-btn" id="back-btn">
+      <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+      Back to dashboard
+    </button>
+    <div class="form-card">
+      <div class="field">
+        <label for="f-name">Project name</label>
+        <input type="text" id="f-name" placeholder="e.g. My New Project">
+      </div>
+      <div class="field">
+        <label for="f-repo">Repo link</label>
+        <input type="url" id="f-repo" placeholder="https://github.com/user/repo">
+      </div>
+      <div class="field">
+        <label for="f-worker">Worker link</label>
+        <input type="url" id="f-worker" placeholder="https://dash.cloudflare.com/.../workers/...">
+      </div>
+      <div class="field">
+        <label for="f-site">Live site link</label>
+        <input type="url" id="f-site" placeholder="https://example.com">
+      </div>
+      <div class="field">
+        <label>Box colour</label>
+        <div class="color-row">
+          <input type="color" id="f-color" value="#7f77dd">
+          <div class="swatches">
+            <div class="swatch" style="background:#c64d2e" data-color="#c64d2e"></div>
+            <div class="swatch" style="background:#fecf41" data-color="#fecf41"></div>
+            <div class="swatch" style="background:#1fd05c" data-color="#1fd05c"></div>
+            <div class="swatch" style="background:#378ade" data-color="#378ade"></div>
+            <div class="swatch" style="background:#d4537e" data-color="#d4537e"></div>
+          </div>
+        </div>
+        <div class="hint">Pick a colour so this project is easy to spot at a glance.</div>
+      </div>
+      <button class="save-btn" id="save-btn">Save site</button>
+    </div>
+  </div>
+
+  <div id="settings-view">
+    <button class="back-btn" id="settings-back-btn">
+      <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+      Back to dashboard
+    </button>
+    <div class="form-card">
+      <div class="field">
+        <label for="s-url">Worker URL</label>
+        <input type="url" id="s-url" placeholder="https://project-dashboard-api.yoursubdomain.workers.dev">
+        <div class="hint">Leave blank to keep this dashboard local to this browser only.</div>
+      </div>
+      <div class="field">
+        <label for="s-key">Dashboard key</label>
+        <input type="password" id="s-key" placeholder="The value you set with: wrangler secret put DASHBOARD_KEY">
+        <div class="hint">Needed to add, edit, or delete — reading the list works without it.</div>
+      </div>
+      <button class="save-btn" id="settings-save-btn">Save and connect</button>
+    </div>
+  </div>
+
+</div>
+
+<script>
+  const LOCAL_KEY = "dashboard_projects_v1";
+  const CONFIG_KEY = "dashboard_api_config_v1";
+
+  const DEFAULT_PROJECTS = [
+    { id: "1", name: "Easy Tarkov", color: "#c64d2e", repo: "", worker: "", site: "", updated: "2 days ago" },
+    { id: "2", name: "MW4 camo tracker", color: "#fecf41", repo: "", worker: "", site: "", updated: "5 hours ago" },
+    { id: "3", name: "Spotify jukebox", color: "#1fd05c", repo: "", worker: "", site: "", updated: "1 hour ago" }
+  ];
+
+  let editingId = null;
+
+  function getConfig(){
+    try{ return JSON.parse(localStorage.getItem(CONFIG_KEY)) || { url: "", key: "" }; }
+    catch(e){ return { url: "", key: "" }; }
+  }
+  function setConfig(cfg){ localStorage.setItem(CONFIG_KEY, JSON.stringify(cfg)); }
+  function isSynced(){ return !!getConfig().url; }
+
+  // ---- local (unsynced) storage ----
+  function loadLocal(){
+    try{
+      const raw = localStorage.getItem(LOCAL_KEY);
+      if(!raw){
+        localStorage.setItem(LOCAL_KEY, JSON.stringify(DEFAULT_PROJECTS));
+        return DEFAULT_PROJECTS.slice();
+      }
+      return JSON.parse(raw);
+    }catch(e){ return DEFAULT_PROJECTS.slice(); }
+  }
+  function saveLocal(projects){ localStorage.setItem(LOCAL_KEY, JSON.stringify(projects)); }
+
+  // ---- data layer: swaps between local storage and the Worker API ----
+  async function fetchProjects(){
+    const cfg = getConfig();
+    if(!cfg.url) return loadLocal();
+    try{
+      const res = await fetch(cfg.url.replace(/\/$/, "") + "/api/projects");
+      if(!res.ok) throw new Error("bad response");
+      return await res.json();
+    }catch(e){
+      console.error("Could not reach Worker, falling back to local copy", e);
+      return loadLocal();
+    }
+  }
+
+  async function createProject(project){
+    const cfg = getConfig();
+    if(!cfg.url){
+      const projects = loadLocal();
+      const full = { id: Date.now().toString(), updated: "just now", ...project };
+      projects.unshift(full);
+      saveLocal(projects);
+      return;
+    }
+    await fetch(cfg.url.replace(/\/$/, "") + "/api/projects", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "Authorization": "Bearer " + cfg.key },
+      body: JSON.stringify(project)
+    });
+  }
+
+  async function updateProject(id, project){
+    const cfg = getConfig();
+    if(!cfg.url){
+      let projects = loadLocal();
+      projects = projects.map(p => p.id === id ? { ...p, ...project, id, updated: "just now" } : p);
+      saveLocal(projects);
+      return;
+    }
+    await fetch(cfg.url.replace(/\/$/, "") + "/api/projects/" + encodeURIComponent(id), {
+      method: "PUT",
+      headers: { "Content-Type": "application/json", "Authorization": "Bearer " + cfg.key },
+      body: JSON.stringify(project)
+    });
+  }
+
+  async function deleteProject(id){
+    const cfg = getConfig();
+    if(!cfg.url){
+      saveLocal(loadLocal().filter(p => p.id !== id));
+      return;
+    }
+    await fetch(cfg.url.replace(/\/$/, "") + "/api/projects/" + encodeURIComponent(id), {
+      method: "DELETE",
+      headers: { "Authorization": "Bearer " + cfg.key }
+    });
+  }
+
+  // ---- icons ----
+  function iconGithub(){
+    return '<svg class="icon" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.58 2 12.26c0 4.54 2.87 8.39 6.84 9.75.5.1.68-.22.68-.49 0-.24-.01-.87-.01-1.71-2.78.62-3.37-1.37-3.37-1.37-.46-1.19-1.11-1.51-1.11-1.51-.91-.63.07-.62.07-.62 1 .07 1.53 1.05 1.53 1.05.89 1.56 2.34 1.11 2.91.85.09-.66.35-1.11.63-1.37-2.22-.26-4.56-1.14-4.56-5.05 0-1.12.39-2.03 1.03-2.75-.1-.26-.45-1.3.1-2.71 0 0 .84-.28 2.75 1.05a9.3 9.3 0 0 1 5 0c1.91-1.33 2.75-1.05 2.75-1.05.55 1.41.2 2.45.1 2.71.64.72 1.03 1.63 1.03 2.75 0 3.92-2.34 4.79-4.57 5.04.36.32.68.94.68 1.9 0 1.37-.01 2.48-.01 2.81 0 .27.18.6.69.49A10.02 10.02 0 0 0 22 12.26C22 6.58 17.52 2 12 2z"/></svg>';
+  }
+  function iconWorker(){
+    return '<svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M13 2 3 14h7l-1 8 10-12h-7l1-8z"/></svg>';
+  }
+  function iconWorld(){
+    return '<svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15 15 0 0 1 0 20 15 15 0 0 1 0-20z"/></svg>';
+  }
+  function iconTrash(){
+    return '<svg class="icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M8 6V4h8v2M6 6l1 14h10l1-14"/></svg>';
+  }
+  function iconEdit(){
+    return '<svg class="icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4 12.5-12.5z"/></svg>';
+  }
+
+  function linkOrDisabled(url, label, icon, primary){
+    if(url){
+      const cls = primary ? "link-btn primary" : "link-btn";
+      return `<a class="${cls}" href="${escapeAttr(url)}" target="_blank" rel="noopener noreferrer">${icon}${label}</a>`;
+    }
+    return `<span class="link-btn disabled">${icon}${label}</span>`;
+  }
+
+  function escapeHtml(str){
+    return String(str).replace(/[&<>"']/g, m => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]));
+  }
+  function escapeAttr(str){ return escapeHtml(str); }
+
+  function renderSyncBanner(){
+    const slot = document.getElementById("sync-banner-slot");
+    if(isSynced()){
+      slot.innerHTML = "";
+      return;
+    }
+    slot.innerHTML = `<div class="sync-banner">
+      <span>This dashboard is only saved on this browser.</span>
+      <button id="banner-settings-link">Connect a Worker to sync across devices</button>
+    </div>`;
+    document.getElementById("banner-settings-link").addEventListener("click", showSettings);
+  }
+
+  let cachedProjects = [];
+
+  async function render(){
+    renderSyncBanner();
+    const projects = await fetchProjects();
+    cachedProjects = projects;
+    const list = document.getElementById("project-list");
+
+    if(projects.length === 0){
+      list.innerHTML = '<div class="empty">No projects yet. Add your first one below.</div>';
+      return;
+    }
+
+    list.innerHTML = projects.map(p => `
+      <div class="project" style="border-left-color:${escapeAttr(p.color)}">
+        <div class="dot" style="background:${escapeAttr(p.color)}"></div>
+        <div class="meta">
+          <p class="name">${escapeHtml(p.name)}</p>
+          <p class="date">Updated ${escapeHtml(p.updated || "just now")}</p>
+        </div>
+        <div class="links">
+          ${linkOrDisabled(p.repo, "Repo", iconGithub())}
+          ${linkOrDisabled(p.worker, "Worker", iconWorker())}
+          ${linkOrDisabled(p.site, "Live site", iconWorld(), true)}
+        </div>
+        <div class="row-actions">
+          <button class="edit-btn" data-id="${escapeAttr(p.id)}" title="Edit project" aria-label="Edit ${escapeHtml(p.name)}">${iconEdit()}</button>
+          <button class="del-btn" data-id="${escapeAttr(p.id)}" title="Delete project" aria-label="Delete ${escapeHtml(p.name)}">${iconTrash()}</button>
+        </div>
+      </div>
+    `).join("");
+
+    list.querySelectorAll(".del-btn").forEach(btn => {
+      btn.addEventListener("click", async () => {
+        await deleteProject(btn.getAttribute("data-id"));
+        render();
+      });
+    });
+    list.querySelectorAll(".edit-btn").forEach(btn => {
+      btn.addEventListener("click", () => {
+        const project = cachedProjects.find(p => p.id === btn.getAttribute("data-id"));
+        if(project) showNewSite(project);
+      });
+    });
+  }
+
+  function showDashboard(){
+    document.getElementById("dashboard-view").style.display = "block";
+    document.getElementById("new-site-view").style.display = "none";
+    document.getElementById("settings-view").style.display = "none";
+    render();
+  }
+
+  function showNewSite(project){
+    editingId = project ? project.id : null;
+    document.getElementById("dashboard-view").style.display = "none";
+    document.getElementById("settings-view").style.display = "none";
+    document.getElementById("new-site-view").style.display = "block";
+
+    document.getElementById("f-name").value = project ? project.name : "";
+    document.getElementById("f-repo").value = project ? project.repo : "";
+    document.getElementById("f-worker").value = project ? project.worker : "";
+    document.getElementById("f-site").value = project ? project.site : "";
+    document.getElementById("f-color").value = project ? project.color : "#7f77dd";
+    document.getElementById("save-btn").textContent = project ? "Save changes" : "Save site";
+
+    document.querySelectorAll(".swatch").forEach(s => {
+      s.classList.toggle("selected", project && s.getAttribute("data-color") === project.color);
+    });
+    document.getElementById("f-name").focus();
+  }
+
+  function showSettings(){
+    document.getElementById("dashboard-view").style.display = "none";
+    document.getElementById("new-site-view").style.display = "none";
+    document.getElementById("settings-view").style.display = "block";
+    const cfg = getConfig();
+    document.getElementById("s-url").value = cfg.url;
+    document.getElementById("s-key").value = cfg.key;
+  }
+
+  document.getElementById("new-site-btn").addEventListener("click", () => showNewSite(null));
+  document.getElementById("back-btn").addEventListener("click", showDashboard);
+  document.getElementById("settings-btn").addEventListener("click", showSettings);
+  document.getElementById("settings-back-btn").addEventListener("click", showDashboard);
+
+  document.querySelectorAll(".swatch").forEach(sw => {
+    sw.addEventListener("click", () => {
+      document.getElementById("f-color").value = sw.getAttribute("data-color");
+      document.querySelectorAll(".swatch").forEach(s => s.classList.remove("selected"));
+      sw.classList.add("selected");
+    });
+  });
+
+  document.getElementById("save-btn").addEventListener("click", async () => {
+    const name = document.getElementById("f-name").value.trim();
+    if(!name){
+      document.getElementById("f-name").focus();
+      return;
+    }
+    const project = {
+      name,
+      color: document.getElementById("f-color").value,
+      repo: document.getElementById("f-repo").value.trim(),
+      worker: document.getElementById("f-worker").value.trim(),
+      site: document.getElementById("f-site").value.trim()
+    };
+    if(editingId){
+      await updateProject(editingId, project);
+    }else{
+      await createProject(project);
+    }
+    showDashboard();
+  });
+
+  document.getElementById("settings-save-btn").addEventListener("click", () => {
+    setConfig({
+      url: document.getElementById("s-url").value.trim(),
+      key: document.getElementById("s-key").value.trim()
+    });
+    showDashboard();
+  });
+
+  showDashboard();
+</script>
+</body>
+</html>
